@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trade7000 - Professional Crypto Trading</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(255, 207, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 207, 0, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid #FFCF00;
+            box-shadow: 0 8px 32px rgba(255, 207, 0, 0.5);
+            position: relative;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #FFCF00 0%, #FDE047 50%, #FFCF00 100%);
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #FFCF00, #FDE047);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(255, 207, 0, 0.8);
+            letter-spacing: 2px;
+            filter: drop-shadow(0 2px 4px rgba(255, 207, 0, 0.3));
+        }
+
+        .registration-banner {
+            background: linear-gradient(90deg, #FFCF00, #FDE047, #FFCF00);
+            padding: 12px 0;
+            text-align: center;
+            color: #000;
+            font-weight: bold;
+            animation: bvbPulse 3s infinite;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
+        }
+
+        @keyframes bvbPulse {
+            0% { 
+                opacity: 0.9; 
+                box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
+            }
+            50% { 
+                opacity: 1; 
+                box-shadow: 0 6px 25px rgba(255, 207, 0, 0.6);
+            }
+            100% { 
+                opacity: 0.9; 
+                box-shadow: 0 4px 15px rgba(255, 207, 0, 0.4);
+            }
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .balance {
+            background: rgba(255, 207, 0, 0.15);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 2px solid #FFCF00;
+            box-shadow: 0 4px 20px rgba(255, 207, 0, 0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        .login-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-form, .register-form {
+            background: rgba(0, 0, 0, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #FFCF00;
+            box-shadow: 0 15px 60px rgba(255, 207, 0, 0.5);
+            backdrop-filter: blur(15px);
+            min-width: 450px;
+            position: relative;
+        }
+
+        .login-form::before, .register-form::before {
+            content: '';
+            position: absolute;
+            top: -3px;
+            left: -3px;
+            right: -3px;
+            bottom: -3px;
+            background: linear-gradient(45deg, #FFCF00, #FDE047, #FFCF00);
+            border-radius: 20px;
+            z-index: -1;
+            animation: borderGlow 3s infinite;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+
+        .admin-login {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 0, 0, 0.8);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            z-index: 1001;
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 280px 1fr 320px;
+            height: calc(100vh - 140px);
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .sidebar {
+            background: rgba(0, 0, 0, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #FFCF00;
+            box-shadow: 0 8px 32px rgba(255, 207, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 207, 0, 0.1), transparent);
+            animation: bvbShine 4s infinite;
+        }
+
+        @keyframes bvbShine {
+            0% { left: -100%; }
+            50% { left: 100%; }
+            100% { left: 100%; }
+        }
+
+        .trading-pair {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 8px 0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+            position: relative;
+            background: rgba(26, 26, 26, 0.5);
+        }
+
+        .trading-pair:hover {
+            background: rgba(255, 207, 0, 0.15);
+            transform: translateX(8px);
+            border-color: #FFCF00;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
+        }
+
+        .trading-pair.active {
+            background: linear-gradient(45deg, #FFCF00, #FDE047);
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 6px 20px rgba(255, 207, 0, 0.5);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            gap: 20px;
+        }
+
+        .price-header {
+            background: rgba(0, 0, 0, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid #FFCF00;
+            box-shadow: 0 8px 32px rgba(255, 207, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .price-header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FFCF00 0%, #FDE047 50%, #FFCF00 100%);
+        }
+
+        .current-price {
+            font-size: 36px;
+            font-weight: bold;
+            color: #FFCF00;
+            text-shadow: 0 0 25px rgba(255, 207, 0, 0.7);
+            filter: drop-shadow(0 3px 6px rgba(255, 207, 0, 0.4));
+        }
+
+        .chart-container {
+            background: rgba(0, 0, 0, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #FFCF00;
+            box-shadow: 0 8px 32px rgba(255, 207, 0, 0.3);
+            position: relative;
+        }
+
+        .chart-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #FFCF00, transparent, #FFCF00);
+            border-radius: 15px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        .deposit-withdraw {
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 15px;
+            border: 2px solid #333333;
+        }
+
+        .wallet-section {
+            background: rgba(0, 0, 0, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #FFCF00;
+            box-shadow: 0 8px 32px rgba(255, 207, 0, 0.3);
+            position: relative;
+        }
+
+        .wallet-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #FFCF00 0%, #FDE047 50%, #FFCF00 100%);
+            border-radius: 15px 15px 0 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #FFCF00;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 0 1px 3px rgba(255, 207, 0, 0.3);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 15px;
+            background: rgba(26, 26, 26, 0.9);
+            border: 2px solid #404040;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            border-color: #FFCF00;
+            outline: none;
+            box-shadow: 0 0 20px rgba(255, 207, 0, 0.4);
+            background: rgba(26, 26, 26, 1);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #FFCF00, #FDE047);
+            color: #000;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 207, 0, 0.5);
+            background: linear-gradient(45deg, #FDE047, #FFCF00);
+        }
+
+        .btn-primary:active {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.6);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #f84960, #ff6b6b);
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 8px 25px rgba(248, 73, 96, 0.4);
+        }
+
+        .btn-warning {
+            background: linear-gradient(45deg, #FFCF00, #FDE047);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-warning:hover {
+            box-shadow: 0 8px 25px rgba(255, 207, 0, 0.5);
+            transform: translateY(-3px);
+        }
+
+        .admin-panel {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(10, 15, 20, 0.98);
+            z-index: 2000;
+            display: none;
+            overflow-y: auto;
+        }
+
+        .admin-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .admin-header {
+            background: linear-gradient(45deg, #FFCF00, #FDE047);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            color: #000;
+            text-align: center;
+            box-shadow: 0 8px 30px rgba(255, 207, 0, 0.4);
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .admin-card {
+            background: rgba(20, 25, 30, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #FFCF00;
+            box-shadow: 0 8px 32px rgba(255, 207, 0, 0.2);
+        }
+
+        .notification {
+            position: fixed;
+            top: 120px;
+            right: 30px;
+            padding: 20px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            transform: translateX(500px);
+            transition: transform 0.4s ease;
+            z-index: 2001;
+            max-width: 400px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: linear-gradient(45deg, #00d4aa, #4ecdc4);
+            color: #000;
+        }
+
+        .notification.error {
+            background: linear-gradient(45deg, #f84960, #ff6b6b);
+            color: #fff;
+        }
+
+        .wallet-address {
+            background: rgba(26, 26, 26, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            word-break: break-all;
+            border: 2px solid #FFCF00;
+            margin: 10px 0;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.2);
+        }
+
+        .pending-withdrawals {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 2px solid #FFCF00;
+            border-radius: 10px;
+            margin: 15px 0;
+            background: rgba(26, 26, 26, 0.5);
+        }
+
+        .withdrawal-item {
+            padding: 15px;
+            border-bottom: 1px solid #404040;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .real-time-prices {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .price-card {
+            background: rgba(26, 26, 26, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #404040;
+            transition: all 0.3s ease;
+        }
+
+        .price-card:hover {
+            border-color: #FFCF00;
+            box-shadow: 0 4px 15px rgba(255, 207, 0, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .security-features {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            font-size: 10px;
+            color: #848e9c;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 1400px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto 1fr;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #404040;
+            border-top: 3px solid #FFCF00;
+            border-radius: 50%;
+            animation: bvbSpin 1s linear infinite;
+        }
+
+        @keyframes bvbSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* BVB-specific enhancements */
+        .bvb-accent {
+            background: linear-gradient(45deg, #FFCF00, #FDE047);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Security Features Indicator -->
+    <div class="security-features">
+        🔒 SSL Encrypted | 🛡️ 2FA Protected | 🔐 Cold Storage | 🚨 Real-time Monitoring
+    </div>
+
+    <!-- Admin Login Button -->
+    <button class="admin-login" onclick="showAdminLogin()">🔐 Admin</button>
+
+    <!-- Registration Banner -->
+    <div class="registration-banner">
+        🚀 Jetzt kostenlos registrieren und bis zu 10% Bonus auf Ihre erste Einzahlung erhalten! 
+        <button onclick="showRegister()" style="background: #000; color: #f0b90b; border: none; padding: 5px 15px; margin-left: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">REGISTRIEREN</button>
+    </div>
+
+    <!-- Customer Login Section -->
+    <div class="login-section" id="loginSection">
+        <div class="login-form" id="loginForm">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #FFCF00; font-size: 28px;">⚡ Trade7000</h2>
+            <p style="text-align: center; margin-bottom: 30px; color: #848e9c;">Echte Emotionen. Echte Gewinne.</p>
+            
+            <div class="form-group">
+                <label>Benutzername:</label>
+                <input type="text" id="loginUsername" placeholder="Benutzername eingeben">
+            </div>
+            <div class="form-group">
+                <label>Passwort:</label>
+                <input type="password" id="loginPassword" placeholder="Passwort eingeben">
+            </div>
+            <button class="btn-primary" onclick="login()">Anmelden</button>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="showRegister()" style="background: none; border: 1px solid #FFCF00; color: #FFCF00; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Noch kein Konto? Registrieren</button>
+                <br><br>
+                <button onclick="showPasswordReset()" style="background: none; border: none; color: #848e9c; text-decoration: underline; cursor: pointer; font-size: 14px;">Passwort vergessen?</button>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <div class="register-form" id="registerForm" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #FFCF00; font-size: 28px;">⚡ Registrierung</h2>
+            
+            <div class="form-group">
+                <label>Name:</label>
+                <input type="text" id="regFullName" placeholder="Vollständiger Name (min. 5 Zeichen)">
+                <small style="color: #848e9c; font-size: 12px;">Mindestens 5 Zeichen erforderlich</small>
+            </div>
+            <div class="form-group">
+                <label>Benutzername:</label>
+                <input type="text" id="regUsername" placeholder="Wählen Sie einen Benutzernamen">
+            </div>
+            <div class="form-group">
+                <label>E-Mail:</label>
+                <input type="email" id="regEmail" placeholder="Ihre E-Mail Adresse">
+                <small style="color: #848e9c; font-size: 12px;">Für Passwort-Reset erforderlich</small>
+            </div>
+            <div class="form-group">
+                <label>Passwort:</label>
+                <input type="password" id="regPassword" placeholder="Sicheres Passwort wählen">
+                <small style="color: #848e9c; font-size: 12px;">Min. 6 Zeichen, 1 Großbuchstabe, 1 Kleinbuchstabe, 1 Zahl</small>
+            </div>
+            <div class="form-group">
+                <label>Passwort bestätigen:</label>
+                <input type="password" id="regPasswordConfirm" placeholder="Passwort wiederholen">
+            </div>
+            <div id="regValidationMessages" style="margin-bottom: 15px; font-size: 12px;"></div>
+            <button class="btn-primary" onclick="register()">Konto erstellen</button>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="showLogin()" style="background: none; border: 1px solid #ffd700; color: #ffd700; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Bereits registriert? Anmelden</button>
+            </div>
+        </div>
+
+        <!-- Password Reset Form -->
+        <div class="login-form" id="passwordResetForm" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #ffd700; font-size: 28px;">Passwort zurücksetzen</h2>
+            <p style="text-align: center; margin-bottom: 30px; color: #848e9c;">Geben Sie Ihre E-Mail Adresse ein</p>
+            
+            <div class="form-group">
+                <label>E-Mail Adresse:</label>
+                <input type="email" id="resetEmail" placeholder="Ihre registrierte E-Mail Adresse">
+            </div>
+            <button class="btn-primary" onclick="sendPasswordReset()">Reset-Link senden</button>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="showLogin()" style="background: none; border: 1px solid #ffd700; color: #ffd700; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Zurück zur Anmeldung</button>
+            </div>
+        </div>
+
+        <!-- New Password Form -->
+        <div class="login-form" id="newPasswordForm" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #ffd700; font-size: 28px;">Neues Passwort</h2>
+            <p style="text-align: center; margin-bottom: 30px; color: #848e9c;">Erstellen Sie ein neues sicheres Passwort</p>
+            
+            <div class="form-group">
+                <label>Neues Passwort:</label>
+                <input type="password" id="newPassword" placeholder="Neues sicheres Passwort">
+                <small style="color: #848e9c; font-size: 12px;">Min. 6 Zeichen, 1 Großbuchstabe, 1 Kleinbuchstabe, 1 Zahl</small>
+            </div>
+            <div class="form-group">
+                <label>Passwort bestätigen:</label>
+                <input type="password" id="newPasswordConfirm" placeholder="Neues Passwort wiederholen">
+            </div>
+            <div id="newPassValidationMessages" style="margin-bottom: 15px; font-size: 12px;"></div>
+            <button class="btn-primary" onclick="resetPassword()">Passwort ändern</button>
+        </div>
+
+        <!-- Admin Login Form -->
+        <div class="login-form" id="adminLoginForm" style="display: none;">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #f84960; font-size: 28px;">🔐 Admin Access</h2>
+            <p style="text-align: center; margin-bottom: 15px; color: #848e9c;">Autorisierter Zugang</p>
+            <div style="background: rgba(255, 207, 0, 0.1); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #FFCF00;">
+                <p style="color: #FFCF00; font-size: 14px; margin: 0; text-align: center;">
+                    <strong>Standard Admin-Zugangsdaten:</strong><br>
+                    Benutzername: admin<br>
+                    Passwort: admin123
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label>Admin Benutzername:</label>
+                <input type="text" id="adminUsername" placeholder="admin" value="admin">
+            </div>
+            <div class="form-group">
+                <label>Admin Passwort:</label>
+                <input type="password" id="adminPassword" placeholder="admin123" value="admin123">
+            </div>
+            <button class="btn-danger" onclick="adminLogin()">Admin Anmelden</button>
+            
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="showLogin()" style="background: none; border: 1px solid #848e9c; color: #848e9c; padding: 8px 16px; border-radius: 5px; cursor: pointer; font-size: 12px;">Zurück</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="mainApp" style="display: none;">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">Trade7000</div>
+            <div class="user-info">
+                <div class="balance">
+                    <div>BTC: <span id="userBTC">0.00000000</span></div>
+                    <div>USDT: <span id="userUSDT">0.00</span></div>
+                    <div style="font-size: 12px; color: #848e9c;">≈ $<span id="totalUSD">0.00</span></div>
+                </div>
+                <span id="currentUser">Benutzer</span>
+                <button onclick="logout()" class="btn-danger" style="padding: 8px 15px; font-size: 14px;">Abmelden</button>
+            </div>
+        </div>
+
+        <!-- Real-time Prices -->
+        <div class="real-time-prices" id="realTimePrices"></div>
+
+        <!-- Main Container -->
+        <div class="main-container">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <h3 style="margin-bottom: 20px; color: #ffd700; text-align: center;">Markets
